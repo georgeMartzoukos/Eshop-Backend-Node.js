@@ -21,6 +21,9 @@ let productSchema = new Schema({
     quantity: {
         type: Number,
         require: [true, "Quantity is required"]
+    },
+    image: {
+        type: String
     }
 })
 

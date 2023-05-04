@@ -1,4 +1,8 @@
 const User = require("../models/user.model")
+const Product = require("../models/product.model")
+
+
+// exports.isFavourite
 
 exports.findOne = function (req, res) {
     const username = req.params.username;
@@ -37,44 +41,73 @@ exports.create = function(req, res) {
 }
 
 
-// exports.create = function(req, res) {
+
+// exports.buy = function(req, res) {
 //     const username = req.params.username;
-//     const newProducts = req.body.products;
+//     const products = req.body.cartList;
+    
+//     for (let i = 0; i < products.length; i++) {
+//         Product.findOne(
+//             {product: products[i].product},
 
-//     User.findOne({ username: username }, (err, user) => {
-//         if (err) {
-//             res.json({ status: false, data: err });
-//         } else if (!user) {
-//             res.json({ status: false, data: "User not found" });
-//         } else {
-//             // Check for duplicates in existing products array
-//             const existingProducts = user.products.map(p => p.product);
-//             const duplicates = newProducts.filter(p => existingProducts.includes(p.product));
+//         )
+//     }
+    
 
-//             if (duplicates.length > 0) {
-//                 res.json({ status: false, data: "Duplicate products not allowed" });
+//     User.updateOne(
+//         { username: username },
+//         {
+//             $push: {
+//                 purchases: { products: products }
+//             }
+//         },
+//         (err, result) => {
+//             if (err) {
+//                 res.json({status: false, data: err});
 //             } else {
-//                 // Add new products to array using $addToSet
-//                 User.updateOne(
-//                     { username: username },
-//                     { $push: { products:  newProducts  } },
-//                     (err, result) => {
-//                         if (err) {
-//                             res.json({ status: false, data: err });
-//                         } else {
-//                             res.json({ status: true, data: result });
-//                         }
-//                     }
-//                 );
+//                 res.json({ status: true, data: result});
 //             }
 //         }
-//     });
+//     )
 // }
 
-
-exports.buy = function(req, res) {
+exports.buy = async function(req, res) {
     const username = req.params.username;
     const products = req.body.cartList;
+    //console.log(products[0].quantity)
+
+    for (let i = 0; i < products.length; i++) {
+        try {
+            const product = await Product.findOne({ product: products[i].product });
+            console.log(product.quantity)
+            console.log(products[i].quantity)
+            if (product.quantity < products[i].quantity) {
+                return res.json({ status: false, message: `Insufficient quantity for product ${product.product}` });
+            } 
+            let quan = product.quantity - products[i].quantity;
+            
+
+            
+            console.log(quan)
+            Product.findOneAndUpdate(
+                { product: products[i].product },
+                { quantity: quan },
+                { new: true },
+                (err, updatedProduct) => {
+                  if (err) {
+                    return res.json({ status: false, message: err.message });
+                  } else {
+                    console.log("Product updated:", updatedProduct);
+                  }
+                }
+              );
+              
+            
+
+        } catch (err) {
+            return res.json({ status: false, message: err.message });
+        }
+    }
 
     User.updateOne(
         { username: username },
@@ -85,44 +118,13 @@ exports.buy = function(req, res) {
         },
         (err, result) => {
             if (err) {
-                res.json({status: false, data: err});
+                res.json({ status: false, message: err.message });
             } else {
-                res.json({ status: true, data: result});
+                res.json({ status: true, message: "Purchase completed successfully" });
             }
         }
     )
 }
-
-
-// exports.buy = async function(req, res, next) {
-//     try {
-//       const  username  = req.params.username;
-//       const  products  = req.body.cartList;
-  
-//       // Validate the request body
-//     //   if (!Array.isArray(cartList)) {
-//     //     return res.status(400).json({ error: 'Invalid request body' });
-//     //   }
-  
-//       // Update the user's purchase history
-//       const result = await User.updateOne(
-//         { username },
-//         {
-//           $push: {
-//             purchases: { products: products }
-//           }
-//         }
-//       );
-  
-//       // Return a response
-//       return res.status(200).json({ status: true, data: result });
-//     } catch (err) {
-//       // Pass any errors to the centralized error handler
-//       return next(err);
-//     }
-//   };
-  
-
 
 
 exports.update = function(req, res) {

@@ -37,7 +37,8 @@ exports.create = function(req, res) {
         product: req.body.product,
         cost: req.body.cost,
         description: req.body.description,
-        quantity: req.body.quantity
+        quantity: req.body.quantity,
+        image: req.body.image
     })
 
     console.log("creata a user");
