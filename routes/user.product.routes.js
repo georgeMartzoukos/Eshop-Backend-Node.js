@@ -3,12 +3,13 @@ const router = express.Router();
 
 const userProductController = require("../controllers/user.product.controller")
 
-router.get("/findOne/:username", userProductController.findOne);
-router.post("/create/:username", userProductController.create);
+router.get("/getFavourites/:username", userProductController.getFavourites);
+router.post("/addToFavourites/:username", userProductController.addToFavourites);
 router.patch("/update", userProductController.update);
-router.delete("/delete/:username/:product", userProductController.delete);
+// router.delete("/delete/:username/:product", userProductController.delete);
 router.get("/stats1/:username", userProductController.stats1)
-router.post("/buy/:username", userProductController.buy)
+router.post("/buy/:username", userProductController.buy),
+router.delete("/removeFromFavourites/:username", userProductController.removeFromFavourites);
 
 
 module.exports = router;

@@ -1,33 +1,31 @@
 const User = require("../models/user.model")
 const Product = require("../models/product.model")
+const ProductAlreadyExists = require('../exceptions/ProductAlreadyExists');
+const { error } = require("winston");
 
 
-// exports.isFavourite
-
-exports.findOne = function (req, res) {
+exports.getFavourites = function (req, res) {
     const username = req.params.username;
 
     User.findOne({username:username}, {_id:0,  products:1}, (err, result) => {
         if (err) {
             res.json({status: false, data: err});
         } else {
+            console.log(result)
             res.json({ status: true, data: result});
         }
     });
 }
 
-exports.create = function(req, res) {
+exports.removeFromFavourites = function (req, res) {
     const username = req.params.username;
     const product = req.body.product;
-    console.log(req.body.product);
-    // const user = User.findOne({username: username});
-    // if (user.products)
-    // User.findOne({username: username})
-    User.updateOne(
+
+    User.updateOne (
         {username: username},
         {
-            $push: {
-                products: product
+            $pull: {
+                products: { product: product }
             }
         },
         (err, result) => {
@@ -41,35 +39,49 @@ exports.create = function(req, res) {
 }
 
 
+exports.addToFavourites = function(req, res) {
+    const username = req.params.username;
+    // const product = req.body.products;
+    const name = req.body.products.product;
+    const image = req.body.products.image;
+    const toBeAdded = {
+        product: req.body.products.product,
+        image: req.body.products.image
+    }
 
-// exports.buy = function(req, res) {
-//     const username = req.params.username;
-//     const products = req.body.cartList;
+    let alreadyExists = false;
     
-//     for (let i = 0; i < products.length; i++) {
-//         Product.findOne(
-//             {product: products[i].product},
+    User.findOne({ username: username }, {_id:0,  products:1},(err, user) => {
+        if (!err) {
+            for (let i = 0; i < user.products.length; i++) {
+                if (user.products[i].product === name) {
+                    console.log(user.products[i].product, " = ", name);
+                    alreadyExists = true;
+                }
+            }
+        } 
+    })
 
-//         )
-//     }
     
+    User.updateOne(
+        {username: username},
+        {
+            $push: {
+                products: toBeAdded
+            }
+        },
+        (err, result, alreadyExists) => {
+            if (err || !alreadyExists) {
+                res.json({status: false, data: err});
+            } else {
+                res.json({ status: true, data: result});
+            }
+        }
+    )     
+    
+}
 
-//     User.updateOne(
-//         { username: username },
-//         {
-//             $push: {
-//                 purchases: { products: products }
-//             }
-//         },
-//         (err, result) => {
-//             if (err) {
-//                 res.json({status: false, data: err});
-//             } else {
-//                 res.json({ status: true, data: result});
-//             }
-//         }
-//     )
-// }
+
 
 exports.buy = async function(req, res) {
     const username = req.params.username;

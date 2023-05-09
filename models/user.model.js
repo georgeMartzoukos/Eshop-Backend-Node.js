@@ -26,6 +26,10 @@ let purchaseSchema = new Schema({
     products: [productSchema]
 });
 
+let favouriteProducts = new Schema({
+    products: [productSchema]
+})
+
 let userSchema = new Schema({
     username: {
         type: String,
@@ -58,10 +62,10 @@ let userSchema = new Schema({
     },
     address : addressSchema ,
     phone: { type: [phoneSchema], null : true},
-    // products: {type: [productSchema], null : true },
-    products: {type: String , null : true },
+    products: {type: [productSchema], null : true },
+   
     purchases: {     
-        type: [purchaseSchema], null : true    
+        type: [purchaseSchema], null : true ,unique: true   
     }
 
 }, {
