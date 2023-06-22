@@ -39,47 +39,131 @@ exports.removeFromFavourites = function (req, res) {
 }
 
 
+// exports.addToFavourites = function(req, res) {
+//     const username = req.params.username;
+//     // const product = req.body.products;
+//     const name = req.body.products.product;
+//     const image = req.body.products.image;
+//     const toBeAdded = {
+//         product: req.body.products.product,
+//         image: req.body.products.image
+//     }
+
+//     let alreadyExists = false;
+    
+//     User.findOne({ username: username }, {_id:0,  products:1},(err, user) => {
+//         if (!err) {
+//             for (let i = 0; i < user.products.length; i++) {
+//                 if (user.products[i].product === name) {
+//                     console.log(user.products[i].product, " = ", name);
+//                     alreadyExists = true;
+//                 }
+//             }
+//         } 
+//     })
+
+    
+//     User.updateOne(
+//         {username: username},
+//         {
+//             $push: {
+//                 products: toBeAdded
+//             }
+//         },
+//         (err, result, alreadyExists) => {
+//             if (err || !alreadyExists) {
+//                 res.json({status: false, data: err});
+//             } else {
+//                 res.json({ status: true, data: result});
+//             }
+//         }
+//     )     
+    
+// }
+
 exports.addToFavourites = function(req, res) {
-    const username = req.params.username;
+
+    const username = req.body.username;
+  
     // const product = req.body.products;
+  
     const name = req.body.products.product;
+  
     const image = req.body.products.image;
+  
     const toBeAdded = {
+  
         product: req.body.products.product,
+  
         image: req.body.products.image
+  
     }
-
-    let alreadyExists = false;
+  
+  
+  
+    // let alreadyExists = false;
+  
     
-    User.findOne({ username: username }, {_id:0,  products:1},(err, user) => {
-        if (!err) {
-            for (let i = 0; i < user.products.length; i++) {
-                if (user.products[i].product === name) {
-                    console.log(user.products[i].product, " = ", name);
-                    alreadyExists = true;
+  
+    User.findOne({ username: username, "products.product": name }, {_id:0,  products:1},(err, user) => {
+  
+      if (err) {
+  
+        console.log("problem in finding user with this product");
+  
+        res.json({status: false, data: err});
+  
+      } else {
+  
+        if (!user) {
+  
+          console.log("user with this product exist");
+  
+          
+  
+          User.updateOne(
+  
+            {username: username},
+  
+            {
+  
+                $push: {
+  
+                    products: toBeAdded
+  
                 }
-            }
-        } 
-    })
-
-    
-    User.updateOne(
-        {username: username},
-        {
-            $push: {
-                products: toBeAdded
-            }
-        },
-        (err, result, alreadyExists) => {
-            if (err || !alreadyExists) {
+  
+            },
+  
+            (err, result) => {
+  
+              if (err) {
+  
                 res.json({status: false, data: err});
-            } else {
+  
+              } else {
+  
                 res.json({ status: true, data: result});
+  
+              }
+  
             }
+  
+          )  
+  
+        } else {
+  
+          console.log("user with this product exist does not exist");
+  
+          res.json({status: false, data: "user with this product exist does not exist"});
+  
         }
-    )     
-    
-}
+  
+      }
+  
+    })
+  
+  }
 
 
 
